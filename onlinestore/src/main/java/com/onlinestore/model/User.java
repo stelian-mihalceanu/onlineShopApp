@@ -1,24 +1,23 @@
-package com.store.model;
+package com.onlinestore.model;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartItem {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int quantity;
+    private String username;
 
-    @ManyToOne
-    private User user;
+    private String password;
 
-    @ManyToOne
-    private Product product;
+    private String role; // USER / ADMIN
 }

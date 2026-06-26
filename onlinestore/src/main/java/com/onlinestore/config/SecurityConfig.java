@@ -1,6 +1,6 @@
-package com.store.config;
+package com.onlinestore.config;
 
-import com.store.security.JwtAuthFilter;
+import com.onlinestore.security.JwtAuthFilter;
 import org.springframework.context.annotation.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;

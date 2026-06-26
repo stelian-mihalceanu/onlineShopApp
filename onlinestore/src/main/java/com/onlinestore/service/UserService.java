@@ -1,7 +1,7 @@
-package com.store.service;
+package com.onlinestore.service;
 
-import com.store.model.User;
-import com.store.repository.UserRepository;
+import com.onlinestore.model.User;
+import com.onlinestore.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

@@ -1,7 +1,9 @@
-package com.store.controller;
+package com.onlinestore.controller;
 
-import com.store.service.ProductService;
-import com.store.model.Product;
+import com.onlinestore.controller.ProductController;
+import com.onlinestore.security.JwtUtil;
+import com.onlinestore.service.ProductService;
+import com.onlinestore.model.Product;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -13,6 +15,9 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.security.test.context.support.WithMockUser;
+
+@WithMockUser  // <-- adaugă asta
 
 @WebMvcTest(ProductController.class)
 class ProductControllerTest {
@@ -22,6 +27,9 @@ class ProductControllerTest {
 
     @MockBean
     private ProductService service;
+
+    @MockBean
+    private JwtUtil jwtUtil; // <-- adaugă asta
 
     @Test
     void shouldReturnProducts() throws Exception {

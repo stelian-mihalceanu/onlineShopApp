@@ -1,4 +1,4 @@
-package com.store.security;
+package com.onlinestore.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

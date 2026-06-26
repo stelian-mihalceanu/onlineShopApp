@@ -1,14 +1,13 @@
-package com.store.controller;
+package com.onlinestore.controller;
 
-import com.store.security.JwtUtil;
-import com.store.service.CartService;
-import org.junit.jupiter.api.Test;
+import com.onlinestore.security.JwtUtil;
+import com.onlinestore.service.CartService;
+import org.testng.annotations.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 

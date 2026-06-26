@@ -1,7 +1,11 @@
-package com.store.service;
+package com.onlinestore.service;
 
-import com.store.model.*;
-import com.store.repository.*;
+import com.onlinestore.model.CartItem;
+import com.onlinestore.model.Product;
+import com.onlinestore.model.User;
+import com.onlinestore.repository.CartRepository;
+import com.onlinestore.repository.ProductRepository;
+import com.onlinestore.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

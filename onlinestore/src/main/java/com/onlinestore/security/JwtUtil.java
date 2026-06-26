@@ -1,4 +1,4 @@
-package com.store.security;
+package com.onlinestore.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

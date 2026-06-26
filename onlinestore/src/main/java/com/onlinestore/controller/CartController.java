@@ -1,8 +1,8 @@
-package com.store.controller;
+package com.onlinestore.controller;
 
-import com.store.model.CartItem;
-import com.store.security.JwtUtil;
-import com.store.service.CartService;
+import com.onlinestore.model.CartItem;
+import com.onlinestore.security.JwtUtil;
+import com.onlinestore.service.CartService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

@@ -1,7 +1,7 @@
-package com.store.service;
+package com.onlinestore.service;
 
-import com.store.model.Product;
-import com.store.repository.ProductRepository;
+import com.onlinestore.model.Product;
+import com.onlinestore.repository.ProductRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;

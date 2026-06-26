@@ -1,7 +1,7 @@
-package com.store.controller;
+package com.onlinestore.controller;
 
-import com.store.model.Product;
-import com.store.service.ProductService;
+import com.onlinestore.model.Product;
+import com.onlinestore.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

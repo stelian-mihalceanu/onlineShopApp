@@ -1,7 +1,7 @@
-package com.store.repository;
+package com.onlinestore.repository;
 
-import com.store.model.CartItem;
-import com.store.model.User;
+import com.onlinestore.model.CartItem;
+import com.onlinestore.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,8 +1,8 @@
-package com.store.controller;
+package com.onlinestore.controller;
 
-import com.store.model.User;
-import com.store.security.JwtUtil;
-import com.store.service.UserService;
+import com.onlinestore.model.User;
+import com.onlinestore.security.JwtUtil;
+import com.onlinestore.service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;

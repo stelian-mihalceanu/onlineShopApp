@@ -1,8 +1,8 @@
-package com.store.service;
+package com.onlinestore.service;
 
-import com.store.model.Product;
+import com.onlinestore.model.Product;
 import org.springframework.stereotype.Service;
-
+import com.onlinestore.repository.ProductRepository;
 import java.util.List;
 
 @Service
