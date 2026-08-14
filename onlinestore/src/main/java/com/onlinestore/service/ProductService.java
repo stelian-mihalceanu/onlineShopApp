@@ -29,4 +29,9 @@ public class ProductService {
     public void delete(Long id) {
         repo.deleteById(id);
     }
+
+    public Product getProductById(Long id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found: " + id));
+    }
 }

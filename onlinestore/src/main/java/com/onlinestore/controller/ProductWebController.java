@@ -20,15 +20,17 @@ public class ProductWebController {
 
     @GetMapping("/products")
     public String listProducts(Model model) {
-        List<Product> products = productService.findAll();
+        List<Product> products = productService.getAllProducts();
+
         model.addAttribute("products", products);
-        return "products"; // templates/products.html
+        return "products";
     }
 
     @GetMapping("/product/{id}")
     public String productDetail(@PathVariable Long id, Model model) {
-        Product product = productService.findById(id);
+        Product product = productService.getProductById(id);
+
         model.addAttribute("product", product);
-        return "product-detail"; // templates/product-detail.html
+        return "product-detail";
     }
 }
