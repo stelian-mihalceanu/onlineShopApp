@@ -42,22 +42,6 @@ public class AuthWebController {
             return "register";
         }
 
-        // TODO: call your UserService to create the user
-        // Example (adapt to your actual service method):
-        // userService.registerUser(user.getEmail(), user.getPassword());
-
-        // After successful registration, redirect to login or home
         return "redirect:/login?registered";
-    }
-
-    // Optional: custom login success handling if you don't use default Spring Security success URL
-    @GetMapping("/")
-    public String home(Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()
-                && !"anonymousUser".equals(authentication.getPrincipal())) {
-            // Logged in: could redirect to products or dashboard
-            return "redirect:/products";
-        }
-        return "index"; // templates/index.html
     }
 }
