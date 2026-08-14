@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/common :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Cart - OnlineShop</title>
+</head>
+<body>
+<main>
+    <h1>Your Cart</h1>
+    <table class="table" th:if="${cartItems != null and !cartItems.isEmpty()}">
+        <thead>
+        <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${cartItems}">
+            <td th:text="${item.product.name}">Product</td>
+            <td th:text="${item.product.price}">0.00</td>
+            <td th:text="${item.quantity}">1</td>
+            <td th:text="${item.product.price * item.quantity}">0.00</td>
+            <td>
+                <form th:action="@{/cart/remove}" method="post">
+                    <input type="hidden" name="cartId" th:value="${item.id}">
+                    <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="alert alert-info" th:if="${cartItems == null or cartItems.isEmpty()}">
+        Your cart is empty.
+    </div>
+    <a th:href="@{/products}" class="btn btn-primary">Continue Shopping</a>
+</main>
+</body>
+</html>

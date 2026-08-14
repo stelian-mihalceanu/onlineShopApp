@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/common :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Home - OnlineShop</title>
+</head>
+<body>
+<main>
+    <div class="p-5 mb-4 bg-light rounded-3">
+        <h1 class="display-5 fw-bold">Welcome to OnlineShop</h1>
+        <p class="lead">Browse products, add to cart, and checkout.</p>
+        <a class="btn btn-primary btn-lg" th:href="@{/products}">View Products</a>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/common :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Products - OnlineShop</title>
+</head>
+<body>
+<main>
+    <h1>Products</h1>
+    <div class="row" th:if="${products != null and !products.isEmpty()}">
+        <div class="col-md-4 mb-4" th:each="product : ${products}">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${product.name}">Product Name</h5>
+                    <p class="card-text" th:text="${product.description}">Description</p>
+                    <p class="card-text">
+                        <strong th:text="${product.price}">Price</strong>
+                    </p>
+                    <a th:href="@{/product/{id}(id=${product.id})}" class="btn btn-outline-primary">View Details</a>
+                    <form th:action="@{/cart/add}" method="post" class="d-inline ms-2">
+                        <input type="hidden" name="productId" th:value="${product.id}"/>
+                        <button type="submit" class="btn btn-success">Add to Cart</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-info" th:if="${products == null or products.isEmpty()}">
+        No products available.
+    </div>
+</main>
+</body>
+</html>
