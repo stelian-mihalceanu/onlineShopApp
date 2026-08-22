@@ -8,15 +8,15 @@ COPY onlinestore/src ./src
 COPY onlinestore/mvnw .
 COPY onlinestore/.mvn ./.mvn
 
-# Build the JAR
-RUN chmod +x mvnw && ./mvnw -f onlinestore/pom.xml clean package -DskipTests
+# Build the JAR - REMOVED the -f flag
+RUN chmod +x mvnw && ./mvnw clean package -DskipTests
 
 # Run stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Wildcard matches any JAR in target/
-COPY --from=builder /app/onlinestore/target/*.jar app.jar
+# Update this path since pom.xml is at root
+COPY --from=builder /app/target/*.jar app.jar
 
 ENV SPRING_PROFILES_ACTIVE=prod
 EXPOSE 8080
