@@ -40,9 +40,13 @@ public class CartController {
         return cartService.getCart(username);
     }
 
-    @DeleteMapping("/{id}")
-    public void removeItem(@PathVariable Long id) {
-        cartService.removeItem(id);
+    @DeleteMapping("/remove")
+    public void removeItem(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam Long productId
+    ) {
+        String username = extractUsername(authHeader);
+        cartService.removeItem(username, productId);
     }
 
     @DeleteMapping("/clear")
