@@ -33,10 +33,43 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
+
+                        // Public web pages and authentication pages
+                        .requestMatchers(
+                                "/",
+                                "/products",
+                                "/product/**",
+                                "/login",
+                                "/register",
+                                "/auth/**",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**"
+                        ).permitAll()
+
+                        // A logged-in user is required
+                        .requestMatchers("/cart", "/cart/**").authenticated()
+
+                        // Admin-only API endpoints
+                        .requestMatchers("/api/products/**").hasRole("ADMIN")
+
+                        .anyRequest().authenticated()
+                )
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/products", true)
+                        .failureUrl("/login?error=true")
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/")
+                        .permitAll()
                 );
 
         http.addFilterBefore(
@@ -49,43 +82,10 @@ public class SecurityConfig {
 
 //    @Bean
 //    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//
 //        http
 //                .csrf(csrf -> csrf.disable())
 //                .authorizeHttpRequests(auth -> auth
-//
-//                        // Public web pages and authentication pages
-//                        .requestMatchers(
-//                                "/",
-//                                "/products",
-//                                "/product/**",
-//                                "/login",
-//                                "/register",
-//                                "/auth/**",
-//                                "/css/**",
-//                                "/js/**",
-//                                "/images/**"
-//                        ).permitAll()
-//
-//                        // A logged-in user is required
-//                        .requestMatchers("/cart", "/cart/**").authenticated()
-//
-//                        // Admin-only API endpoints
-//                        .requestMatchers("/api/products/**").hasRole("ADMIN")
-//
-//                        .anyRequest().authenticated()
-//                )
-//                .formLogin(form -> form
-//                        .loginPage("/login")
-//                        .loginProcessingUrl("/login")
-//                        .defaultSuccessUrl("/products", true)
-//                        .failureUrl("/login?error=true")
-//                        .permitAll()
-//                )
-//                .logout(logout -> logout
-//                        .logoutUrl("/logout")
-//                        .logoutSuccessUrl("/")
-//                        .permitAll()
+//                        .anyRequest().permitAll()
 //                );
 //
 //        http.addFilterBefore(
