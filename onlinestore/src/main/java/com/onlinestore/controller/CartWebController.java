@@ -6,8 +6,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import java.security.Principal;
 
 import java.util.List;
 
@@ -30,23 +32,12 @@ public class CartWebController {
         return "cart";
     }
 
-    @PostMapping("/cart/add")
-    public String addToCart(
-            Authentication authentication,
-            @RequestParam Long productId,
-            @RequestParam(defaultValue = "1") int qty
+    @PostMapping("/cart/remove/{id}")
+    public String removeFromCart(
+            @PathVariable Long id,
+            Principal principal
     ) {
-        String username = authentication.getName();
-
-        cartService.addToCart(username, productId, qty);
-
-        return "redirect:/cart";
-    }
-
-    @PostMapping("/cart/remove")
-    public String removeFromCart(@RequestParam Long cartId) {
-        cartService.removeItem(cartId);
-
+        cartService.removeItem(principal.getName(), id);
         return "redirect:/cart";
     }
 }
