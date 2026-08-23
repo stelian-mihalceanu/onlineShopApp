@@ -1,60 +1,76 @@
 package com.onlinestore.service;
 
+import com.onlinestore.event.CartEvent;
 import com.onlinestore.model.CartItem;
 import com.onlinestore.model.Product;
-import com.onlinestore.model.User;
 import com.onlinestore.repository.CartRepository;
 import com.onlinestore.repository.ProductRepository;
-import com.onlinestore.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CartService {
 
-    private final CartRepository cartRepo;
-    private final ProductRepository productRepo;
-    private final UserRepository userRepo;
+    private final CartRepository cartRepository;
+    private final ProductRepository productRepository;
+    private final CartEventProducer cartEventProducer;
 
-    public CartService(CartRepository cartRepo, ProductRepository productRepo, UserRepository userRepo) {
-        this.cartRepo = cartRepo;
-        this.productRepo = productRepo;
-        this.userRepo = userRepo;
+    public CartService(CartRepository cartRepository,
+                       ProductRepository productRepository,
+                       CartEventProducer cartEventProducer) {
+        this.cartRepository = cartRepository;
+        this.productRepository = productRepository;
+        this.cartEventProducer = cartEventProducer;
     }
 
-    public CartItem addToCart(String username, Long productId, int qty) {
-
-        User user = userRepo.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Product product = productRepo.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        CartItem item = new CartItem();
-        item.setUser(user);
-        item.setProduct(product);
-        item.setQuantity(qty);
-
-        return cartRepo.save(item);
+    public List<CartItem> getCartItemsByUserId(String userId) {
+        return cartRepository.findByUserId(userId);
     }
 
-    public List<CartItem> getCart(String username) {
+    public CartItem addToCart(String userId, String productId, int quantity) {
+        Optional<Product> productOpt = productRepository.findById(productId);
+        if (productOpt.isEmpty()) {
+            throw new IllegalArgumentException("Product not found with id: " + productId);
+        }
 
-        User user = userRepo.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Product product = productOpt.get();
 
-        return cartRepo.findByUser(user);
+        Optional<CartItem> existingItemOpt = cartRepository.findByUserIdAndProductId(userId, productId);
+        if (existingItemOpt.isPresent()) {
+            CartItem existingItem = existingItemOpt.get();
+            existingItem.setQuantity(existingItem.getQuantity() + quantity);
+            CartItem updated = cartRepository.save(existingItem);
+
+            CartEvent event = new CartEvent(userId, productId, updated.getQuantity(), "UPDATE");
+            cartEventProducer.sendCartEvent(event);
+
+            return updated;
+        } else {
+            CartItem newItem = new CartItem();
+            newItem.setUserId(userId);
+            newItem.setProductId(productId);
+            newItem.setProductName(product.getName());
+            newItem.setProductPrice(product.getPrice());
+            newItem.setQuantity(quantity);
+            CartItem saved = cartRepository.save(newItem);
+
+            CartEvent event = new CartEvent(userId, productId, quantity, "ADD");
+            cartEventProducer.sendCartEvent(event);
+
+            return saved;
+        }
     }
 
-    public void removeItem(Long cartId) {
-        cartRepo.deleteById(cartId);
+    public void removeItem(String userId, String productId) {
+        cartRepository.deleteByUserIdAndProductId(userId, productId);
+
+        CartEvent event = new CartEvent(userId, productId, 0, "REMOVE");
+        cartEventProducer.sendCartEvent(event);
     }
 
-    public void clearCart(String username) {
-        User user = userRepo.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        cartRepo.deleteByUser(user);
+    public void clearCart(String userId) {
+        cartRepository.deleteByUserId(userId);
     }
 }
