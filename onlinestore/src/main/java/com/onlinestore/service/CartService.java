@@ -1,6 +1,5 @@
 package com.onlinestore.service;
 
-import com.onlinestore.event.CartEvent;
 import com.onlinestore.model.CartItem;
 import com.onlinestore.model.Product;
 import com.onlinestore.model.User;
@@ -18,16 +17,13 @@ public class CartService {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
-    private final CartEventProducer cartEventProducer;
 
     public CartService(CartRepository cartRepository,
                        ProductRepository productRepository,
-                       UserRepository userRepository,
-                       CartEventProducer cartEventProducer) {
+                       UserRepository userRepository) {
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
-        this.cartEventProducer = cartEventProducer;
     }
 
     public List<CartItem> getCart(String username) {
@@ -37,6 +33,10 @@ public class CartService {
     }
 
     public CartItem addToCart(String username, Long productId, int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than zero");
+        }
+
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
 
@@ -47,24 +47,14 @@ public class CartService {
         if (existingItemOpt.isPresent()) {
             CartItem existingItem = existingItemOpt.get();
             existingItem.setQuantity(existingItem.getQuantity() + quantity);
-            CartItem updated = cartRepository.save(existingItem);
-
-            CartEvent event = new CartEvent(username, String.valueOf(productId), updated.getQuantity(), "UPDATE");
-            cartEventProducer.sendCartEvent(event);
-
-            return updated;
-        } else {
-            CartItem newItem = new CartItem();
-            newItem.setUser(user);
-            newItem.setProduct(product);
-            newItem.setQuantity(quantity);
-            CartItem saved = cartRepository.save(newItem);
-
-            CartEvent event = new CartEvent(username, String.valueOf(productId), quantity, "ADD");
-            cartEventProducer.sendCartEvent(event);
-
-            return saved;
+            return cartRepository.save(existingItem);
         }
+
+        CartItem newItem = new CartItem();
+        newItem.setUser(user);
+        newItem.setProduct(product);
+        newItem.setQuantity(quantity);
+        return cartRepository.save(newItem);
     }
 
     public void removeItem(String username, Long productId) {
@@ -75,9 +65,6 @@ public class CartService {
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + productId));
 
         cartRepository.deleteByUserAndProduct(user, product);
-
-        CartEvent event = new CartEvent(username, String.valueOf(productId), 0, "REMOVE");
-        cartEventProducer.sendCartEvent(event);
     }
 
     public void clearCart(String username) {
