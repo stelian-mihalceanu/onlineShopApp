@@ -1,53 +1,47 @@
 # onlineShopApp
 
-Spring Boot e‑commerce backend with REST + web MVC, PostgreSQL, Kafka, and Selenium E2E tests.
-Built as a portfolio project for QA automation / mid‑level Java backend roles.
+Spring Boot e-commerce application with REST + web MVC, PostgreSQL, Spring Security, Thymeleaf, and Selenium E2E tests.
+Built as a portfolio project for QA automation / mid-level Java backend roles.
 
 ## Tech stack
 
 - **Runtime**: Java 17, Spring Boot 3.3
-- **Web**: Spring MVC, Thymeleaf (server‑rendered pages)
+- **Web**: Spring MVC, Thymeleaf (server-rendered pages)
 - **Data**: PostgreSQL (JPA/Hibernate)
-- **Messaging**: Apache Kafka (cart events)
 - **Security**: Spring Security (form login, password hashing)
+- **Validation**: Jakarta Bean Validation
 - **Tests**:
   - Unit & integration tests (JUnit, Spring test)
   - E2E UI tests (Selenium WebDriver)
-- **DevOps**: Docker & Docker Compose (app, Postgres, Kafka, Zookeeper)
+- **DevOps**: Docker & Docker Compose (app, PostgreSQL)
+
+Kafka and Zookeeper are intentionally removed from the current MVP to keep the application easier to run, test, and deploy. Event-driven messaging can be introduced later when there is a real downstream consumer such as analytics, notifications, or order processing.
 
 ## Architecture overview
 
 ```
 ┌────────────┐      ┌─────────────┐      ┌────────────┐
 │  Browser   │─────▶│  Spring Boot│─────▶│ PostgreSQL │
-│  (UI)      │      │  (onlinestore)    │  (onlinestore)
+│   / REST   │      │   onlinestore│      │ onlinestore│
 └────────────┘      └─────────────┘      └────────────┘
-                           │
-                           ▼
-                      ┌────────────┐
-                      │   Kafka    │
-                      │ cart-events│
-                      └────────────┘
-                           │
-                           ▼
-                  (logging / analytics)
 ```
 
 Key packages (under `onlinestore/src/main/java/com/onlinestore`):
 
 - `controller` – REST & web controllers (`Auth*`, `Product*`, `Cart*`, `Home`)
-- `service` – business logic (`CartService`, `ProductService`, `UserService`, Kafka producer/consumer)
+- `service` – business logic (`CartService`, `ProductService`, `UserService`)
 - `repository` – Spring Data JPA repositories
 - `model` – JPA entities (`User`, `Product`, `CartItem`)
 - `security` – Spring Security config
-- `event` – Kafka event DTOs (`CartEvent`)
 
 ## Features
 
 - User registration & login
 - Product browsing & details
 - Shopping cart (add, update, remove items)
-- Kafka events for cart operations (`ADD`, `UPDATE`, `REMOVE`)
+- Server-rendered Thymeleaf UI
+- REST endpoints for application operations
+- Input validation and Spring Security
 - Selenium E2E tests for key user journeys
 
 ## Prerequisites
@@ -56,7 +50,7 @@ Key packages (under `onlinestore/src/main/java/com/onlinestore`):
 - Java 17+ (for local runs)
 - Maven (bundled via `mvnw` wrapper)
 
-## Running with Docker (recommended)
+## Running with Docker
 
 From the project root:
 
@@ -70,27 +64,21 @@ This starts:
 - **PostgreSQL**: `jdbc:postgresql://localhost:5432/onlinestore`
   - Username: `user`
   - Password: `password`
-- **Kafka**: `localhost:9092`
-  - Topic: `cart-events`
-- **Zookeeper**: `localhost:2181`
 
-Profiles:
-- The app runs with `SPRING_PROFILES_ACTIVE=docker` and uses `application-docker.properties`.
+The app runs with `SPRING_PROFILES_ACTIVE=docker` and uses `application-docker.properties`.
 
-## Running locally (without Docker)
+## Running locally
 
 1. Start PostgreSQL locally and create a database `onlinestore`.
-2. Set environment variables (or edit `application.properties`):
+2. Set environment variables:
 
 ```bash
 export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/onlinestore
 export SPRING_DATASOURCE_USERNAME=user
 export SPRING_DATASOURCE_PASSWORD=password
-export SPRING_KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 ```
 
-3. Start Kafka & Zookeeper locally (e.g. via Docker or your own setup).
-4. Run the app:
+3. Run the app:
 
 ```bash
 cd onlinestore
@@ -103,15 +91,16 @@ Then open http://localhost:8080.
 
 Main config files:
 
-- `onlinestore/src/main/resources/application.properties` – default (local) config
+- `onlinestore/src/main/resources/application.properties` – default config
 - `onlinestore/src/main/resources/application-docker.properties` – Docker profile config
-- `docker-compose.yml` – services and environment variables
+- `docker-compose.yml` – app + PostgreSQL services
 
 Key properties:
 
 - `spring.datasource.*` – PostgreSQL connection
-- `spring.jpa.hibernate.ddl-auto=update` – auto‑migrate schema
-- `spring.kafka.*` – Kafka bootstrap servers, consumer group, serializers
+- `spring.jpa.hibernate.ddl-auto=update` – development-friendly schema updates
+
+For production, replace `ddl-auto=update` with an explicit migration strategy such as Flyway or Liquibase.
 
 ## Testing
 
@@ -122,7 +111,7 @@ cd onlinestore
 ./mvnw test
 ```
 
-Tests use H2 in‑memory DB (test profile) and do not require external Kafka.
+Tests use H2 in-memory DB where configured and do not require external messaging infrastructure.
 
 ### E2E Selenium tests
 
@@ -140,32 +129,8 @@ Run with:
 ```
 
 Notes:
-- Ensure the app is running (Docker or local) before E2E tests.
+- Ensure the app is running before E2E tests.
 - Tests assume the app is reachable at `http://localhost:8080`.
-
-## Kafka usage
-
-Cart operations publish events to topic `cart-events`:
-
-- `addToCart` → `ADD` or `UPDATE`
-- `removeItem` → `REMOVE`
-
-Event payload (JSON):
-
-```json
-{
-  "userId": "string",
-  "productId": "string",
-  "quantity": 0,
-  "type": "ADD|UPDATE|REMOVE"
-}
-```
-
-Consumer (`CartEventConsumer`) logs events; you can extend it for:
-
-- Analytics / dashboards
-- Notifications
-- Downstream microservices
 
 ## Database schema
 
@@ -175,11 +140,11 @@ Entities (JPA):
 - `Product` – product catalog (id, name, price, etc.)
 - `CartItem` – user cart entries (userId, productId, quantity, price)
 
-Schema is auto‑created/updated by Hibernate (`ddl-auto=update`). For production, consider migration tools like Flyway or Liquibase.
+Schema is auto-created/updated by Hibernate (`ddl-auto=update`). For production, use explicit database migrations.
 
 ## Project structure
 
-```
+```text
 .
 ├── docker-compose.yml
 ├── Dockerfile
@@ -190,7 +155,6 @@ Schema is auto‑created/updated by Hibernate (`ddl-auto=update`). For productio
 │       │   ├── java/com/onlinestore/
 │       │   │   ├── config/
 │       │   │   ├── controller/
-│       │   │   ├── event/
 │       │   │   ├── model/
 │       │   │   ├── repository/
 │       │   │   ├── security/
@@ -207,26 +171,15 @@ Schema is auto‑created/updated by Hibernate (`ddl-auto=update`). For productio
 └── README.md
 ```
 
-## How this helps in interviews
+## Recommended next improvements
 
-You can talk about:
-
-- Designing a layered Spring Boot backend (controllers, services, repositories).
-- Securing endpoints with Spring Security.
-- Modeling relational data with JPA/Hibernate.
-- Adding event‑driven architecture with Kafka.
-- Writing tests at multiple levels (unit, integration, E2E with Selenium).
-- Containerizing the app and orchestrating services with Docker Compose.
-
-## Next steps / ideas
-
-Possible extensions:
-
-- Add an `Order` entity and `OrderService`, publishing `order-placed` events.
-- Add a separate consumer service (e.g., for analytics or email notifications).
-- Introduce Flyway/Liquibase for explicit schema migrations.
-- Add more E2E scenarios (login, checkout flow).
-- Deploy to a cloud provider (e.g., Oracle Cloud, GCP, AWS) and document the setup.
+- Add `Order` and `OrderItem` entities with a checkout flow.
+- Add stock/inventory validation and transactional checkout.
+- Add pagination and filtering for the product catalog.
+- Introduce Flyway/Liquibase migrations.
+- Improve API error handling with consistent problem responses.
+- Add CI checks for build, tests, and static analysis.
+- Re-introduce event-driven messaging only when there is a concrete use case.
 
 ## License
 
