@@ -1,41 +1,34 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/common :: layout(~{::title}, ~{::main})}">
-<head>
-    <title>Cart - OnlineShop</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/common :: layout(~{::title}, ~{::main})}">
+<head><title>Cart - OnlineShop</title></head>
 <body>
 <main>
-    <h1>Your Cart</h1>
-    <table class="table" th:if="${cartItems != null and !cartItems.isEmpty()}">
-        <thead>
-        <tr>
-            <th>Product</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Total</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="item : ${cartItems}">
-            <td th:text="${item.product.name}">Product</td>
-            <td th:text="${item.product.price}">0.00</td>
-            <td th:text="${item.quantity}">1</td>
-            <td th:text="${item.product.price * item.quantity}">0.00</td>
-            <td>
-                <form th:action="@{/cart/remove}" method="post">
-                    <input type="hidden" name="cartId" th:value="${item.id}">
-                    <button type="submit" class="btn btn-sm btn-danger">Remove</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    <div class="alert alert-info" th:if="${cartItems == null or cartItems.isEmpty()}">
-        Your cart is empty.
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h1 class="h3 mb-1">Your Cart</h1><p class="text-muted mb-0">Review your items before checkout.</p></div>
+        <a class="btn btn-outline-secondary" th:href="@{/products}">Products</a>
     </div>
-    <a th:href="@{/products}" class="btn btn-primary">Continue Shopping</a>
+    <div class="alert alert-info" th:if="${cartItems.isEmpty()}">Your cart is empty.</div>
+    <div th:unless="${cartItems.isEmpty()}">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Product</th><th>Price</th><th>Quantity</th><th>Total</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="item : ${cartItems}">
+                    <td th:text="${item.product.name}">Product</td>
+                    <td th:text="${item.product.price}">0.00</td>
+                    <td th:text="${item.quantity}">1</td>
+                    <td th:text="${item.product.price * item.quantity}">0.00</td>
+                    <td><form th:action="@{/cart/remove/{id}(id=${item.product.id})}" method="post"><button type="submit" class="btn btn-sm btn-outline-danger">Remove</button></form></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-end align-items-center gap-3 mt-4">
+            <strong class="fs-5" th:text="|Total: ${cartTotal}|">Total</strong>
+            <a class="btn btn-primary" th:href="@{/checkout}">Checkout</a>
+            <form th:action="@{/cart/clear}" method="post"><button type="submit" class="btn btn-outline-danger">Clear cart</button></form>
+        </div>
+    </div>
 </main>
 </body>
 </html>
