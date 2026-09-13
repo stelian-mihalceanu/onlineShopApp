@@ -17,10 +17,13 @@ public class UserService {
     }
 
     public User register(User user) {
-        user.setPassword(encoder.encode(user.getPassword()));
-        if (user.getRole() == null) {
-            user.setRole("ROLE_USER");
+        String username = user.getUsername().trim();
+        if (repo.findByUsername(username).isPresent()) {
+            throw new IllegalArgumentException("Username is already registered");
         }
+
+        user.setUsername(username);
+        user.setPassword(encoder.encode(user.getPassword()));
         user.setRole("USER");
         return repo.save(user);
     }
