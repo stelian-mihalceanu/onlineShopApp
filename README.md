@@ -10,28 +10,31 @@ Built as a portfolio project for QA automation / mid-level Java backend roles.
 - **Data**: PostgreSQL (JPA/Hibernate)
 - **Security**: Spring Security (form login, password hashing)
 - **Validation**: Jakarta Bean Validation
+- **Database migrations**: Flyway
 - **Tests**:
   - Unit & integration tests (JUnit, Spring test)
+  - External backend/API tests in [`onlineShopApp-test`](https://github.com/stelian-mihalceanu/onlineShopApp-test)
+  - Frontend page tests in [`onlineShopApp-test`](https://github.com/stelian-mihalceanu/onlineShopApp-test)
   - E2E UI tests (Selenium WebDriver)
 - **DevOps**: Docker & Docker Compose (app, PostgreSQL)
 
-Kafka and Zookeeper are intentionally removed from the current MVP to keep the application easier to run, test, and deploy. Event-driven messaging can be introduced later when there is a real downstream consumer such as analytics, notifications, or order processing.
+Kafka and Zookeeper are intentionally removed from the current MVP. The application does not require Kafka-related environment variables or messaging infrastructure at runtime.
 
 ## Architecture overview
 
-```
+```text
 ┌────────────┐      ┌─────────────┐      ┌────────────┐
 │  Browser   │─────▶│  Spring Boot│─────▶│ PostgreSQL │
-│   / REST   │      │   onlinestore│      │ onlinestore│
+│   / REST   │      │  onlinestore│      │ onlinestore │
 └────────────┘      └─────────────┘      └────────────┘
 ```
 
 Key packages (under `onlinestore/src/main/java/com/onlinestore`):
 
 - `controller` – REST & web controllers (`Auth*`, `Product*`, `Cart*`, `Home`)
-- `service` – business logic (`CartService`, `ProductService`, `UserService`)
+- `service` – business logic (`CartService`, `ProductService`, `UserService`, `OrderService`)
 - `repository` – Spring Data JPA repositories
-- `model` – JPA entities (`User`, `Product`, `CartItem`)
+- `model` – JPA entities (`User`, `Product`, `CartItem`, `Order`)
 - `security` – Spring Security config
 
 ## Features
@@ -39,10 +42,11 @@ Key packages (under `onlinestore/src/main/java/com/onlinestore`):
 - User registration & login
 - Product browsing & details
 - Shopping cart (add, update, remove items)
+- Checkout and order creation
 - Server-rendered Thymeleaf UI
 - REST endpoints for application operations
 - Input validation and Spring Security
-- Selenium E2E tests for key user journeys
+- Flyway database migrations
 
 ## Prerequisites
 
@@ -91,16 +95,19 @@ Then open http://localhost:8080.
 
 Main config files:
 
-- `onlinestore/src/main/resources/application.properties` – default config
-- `onlinestore/src/main/resources/application-docker.properties` – Docker profile config
+- `onlinestore/src/main/resources/application.properties` – base config
+- `onlinestore/src/main/resources/application-docker.properties` – Docker profile
+- `onlinestore/src/main/resources/application-railway.properties` – Railway production profile
 - `docker-compose.yml` – app + PostgreSQL services
 
-Key properties:
+Production uses:
 
-- `spring.datasource.*` – PostgreSQL connection
-- `spring.jpa.hibernate.ddl-auto=update` – development-friendly schema updates
+- `spring.jpa.hibernate.ddl-auto=validate`
+- Flyway migrations
+- PostgreSQL credentials supplied through environment variables
+- `server.forward-headers-strategy=framework` for reverse-proxy deployments
 
-For production, replace `ddl-auto=update` with an explicit migration strategy such as Flyway or Liquibase.
+No Kafka or Zookeeper configuration is required.
 
 ## Testing
 
@@ -113,14 +120,17 @@ cd onlinestore
 
 Tests use H2 in-memory DB where configured and do not require external messaging infrastructure.
 
+### External QA repository
+
+Backend/API, frontend smoke tests, and end-to-end Selenium coverage are maintained separately in:
+
+https://github.com/stelian-mihalceanu/onlineShopApp-test
+
+The QA pipeline starts a real PostgreSQL-backed application and executes the external test suite against it.
+
 ### E2E Selenium tests
 
-E2E tests live under `src/test/java/com/onlinestore/e2e`:
-
-- `HomePageE2eTest`
-- `ProductE2eTest`
-- `CartE2eTest`
-- `RegisterE2eTest`
+E2E tests can also live under `onlinestore/src/test/java/com/onlinestore/e2e` and assume the app is reachable at `http://localhost:8080`.
 
 Run with:
 
@@ -128,19 +138,9 @@ Run with:
 ./mvnw test -Dtest="*E2eTest"
 ```
 
-Notes:
-- Ensure the app is running before E2E tests.
-- Tests assume the app is reachable at `http://localhost:8080`.
-
 ## Database schema
 
-Entities (JPA):
-
-- `User` – application users (credentials, roles)
-- `Product` – product catalog (id, name, price, etc.)
-- `CartItem` – user cart entries (userId, productId, quantity, price)
-
-Schema is auto-created/updated by Hibernate (`ddl-auto=update`). For production, use explicit database migrations.
+The production profile uses Flyway migrations and Hibernate schema validation. Schema changes should be made through versioned migrations rather than `ddl-auto=update`.
 
 ## Project structure
 
@@ -162,24 +162,34 @@ Schema is auto-created/updated by Hibernate (`ddl-auto=update`). For production,
 │       │   └── resources/
 │       │       ├── application.properties
 │       │       ├── application-docker.properties
+│       │       ├── application-railway.properties
+│       │       ├── db/migration/
 │       │       └── templates/
 │       └── test/
 │           └── java/com/onlinestore/
-│               ├── controller/
-│               ├── e2e/
-│               └── service/
 └── README.md
 ```
 
+## Deployment
+
+Railway should provide the PostgreSQL connection through:
+
+```text
+SPRING_DATASOURCE_URL
+SPRING_DATASOURCE_USERNAME
+SPRING_DATASOURCE_PASSWORD
+PORT
+```
+
+The Docker image starts Spring Boot with the Railway profile by default. No Kafka or Zookeeper service or environment variables are needed.
+
 ## Recommended next improvements
 
-- Add `Order` and `OrderItem` entities with a checkout flow.
-- Add stock/inventory validation and transactional checkout.
 - Add pagination and filtering for the product catalog.
-- Introduce Flyway/Liquibase migrations.
+- Expand inventory/stock business rules.
 - Improve API error handling with consistent problem responses.
-- Add CI checks for build, tests, and static analysis.
-- Re-introduce event-driven messaging only when there is a concrete use case.
+- Add CI static analysis and dependency scanning.
+- Introduce event-driven messaging only when there is a concrete use case.
 
 ## License
 
