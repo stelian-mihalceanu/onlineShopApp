@@ -59,12 +59,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Kafka -->
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-        </dependency>
-
         <!-- DevTools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -128,7 +122,6 @@
             <version>0.12.6</version>
             <scope>runtime</scope>
         </dependency>
-
     </dependencies>
 
     <build>
