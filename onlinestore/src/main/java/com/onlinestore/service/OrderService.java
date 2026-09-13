@@ -18,16 +18,12 @@ import java.util.List;
 
 @Service
 public class OrderService {
-
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
-    public OrderService(OrderRepository orderRepository,
-                        CartRepository cartRepository,
-                        ProductRepository productRepository,
-                        UserRepository userRepository) {
+    public OrderService(OrderRepository orderRepository, CartRepository cartRepository, ProductRepository productRepository, UserRepository userRepository) {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
@@ -36,13 +32,9 @@ public class OrderService {
 
     @Transactional
     public Order checkout(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
         List<CartItem> cartItems = cartRepository.findByUser(user);
-        if (cartItems.isEmpty()) {
-            throw new IllegalStateException("Cart is empty");
-        }
+        if (cartItems.isEmpty()) throw new IllegalStateException("Cart is empty");
 
         Order order = new Order();
         order.setUser(user);
@@ -51,27 +43,19 @@ public class OrderService {
 
         double total = 0.0;
         for (CartItem cartItem : cartItems) {
-            if (cartItem.getQuantity() <= 0) {
-                throw new IllegalStateException("Cart contains an invalid quantity");
-            }
-
+            if (cartItem.getQuantity() <= 0) throw new IllegalStateException("Cart contains an invalid quantity");
             Product product = productRepository.findByIdForUpdate(cartItem.getProduct().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Product no longer exists"));
-
             if (product.getStock() < cartItem.getQuantity()) {
-                throw new IllegalStateException(
-                        "Insufficient stock for product: " + product.getName());
+                throw new IllegalStateException("Insufficient stock for product: " + product.getName());
             }
-
             product.setStock(product.getStock() - cartItem.getQuantity());
-            productRepository.save(product);
-
-            OrderItem orderItem = new OrderItem();
-            orderItem.setProduct(product);
-            orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setUnitPrice(product.getPrice());
-            order.addItem(orderItem);
-            total += orderItem.getLineTotal();
+            OrderItem item = new OrderItem();
+            item.setProduct(product);
+            item.setQuantity(cartItem.getQuantity());
+            item.setUnitPrice(product.getPrice());
+            order.addItem(item);
+            total += item.getLineTotal();
         }
 
         order.setTotalAmount(total);
@@ -82,8 +66,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public List<Order> getOrders(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return orderRepository.findByUserOrderByCreatedAtDesc(user);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return orderRepository.findByUserWithItems(user);
     }
 }
