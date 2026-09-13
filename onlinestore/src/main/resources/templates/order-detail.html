@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/common :: layout(~{::title}, ~{::main})}">
+<head><title>Order - OnlineShop</title></head>
+<body>
+<main>
+<h1 th:text="|Order #${order.id}|">Order</h1>
+<p th:text="${order.createdAt}">date</p>
+<p><strong th:text="${order.status}">PLACED</strong></p>
+<table class="table">
+<thead><tr><th>Product</th><th>Quantity</th><th>Unit price</th><th>Total</th></tr></thead>
+<tbody>
+<tr th:each="item : ${order.items}">
+<td th:text="${item.product.name}">Product</td>
+<td th:text="${item.quantity}">1</td>
+<td th:text="${item.unitPrice}">0.00</td>
+<td th:text="${item.lineTotal}">0.00</td>
+</tr>
+</tbody>
+</table>
+<h2 th:text="|Total: ${order.totalAmount}|">Total</h2>
+<a class="btn btn-primary" th:href="@{/products}">Products</a>
+<a class="btn btn-secondary" th:href="@{/orders}">Orders</a>
+</main>
+</body>
+</html>
