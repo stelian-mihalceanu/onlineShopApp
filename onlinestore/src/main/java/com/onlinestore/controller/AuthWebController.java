@@ -1,6 +1,5 @@
 package com.onlinestore.controller;
 
-import org.springframework.security.core.Authentication;
 import com.onlinestore.model.User;
 import com.onlinestore.service.UserService;
 import jakarta.validation.Valid;
@@ -22,26 +21,27 @@ public class AuthWebController {
 
     @GetMapping("/login")
     public String loginPage() {
-        // If already logged in, redirect to home or products
-        return "login"; // resolves to templates/login.html
+        return "login";
     }
 
     @GetMapping("/register")
     public String registerPage(Model model) {
         model.addAttribute("user", new User());
-        return "register"; // resolves to templates/register.html
+        return "register";
     }
 
     @PostMapping("/register")
-    public String registerUser(
-            @ModelAttribute("user") @Valid User user,
-            BindingResult bindingResult,
-            Model model
-    ) {
+    public String registerUser(@ModelAttribute("user") @Valid User user,
+                               BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return "register";
         }
-
-        return "redirect:/login?registered";
+        try {
+            userService.register(user);
+        } catch (IllegalArgumentException exception) {
+            bindingResult.rejectValue("username", "duplicate", exception.getMessage());
+            return "register";
+        }
+        return "redirect:/login?registered=true";
     }
 }
