@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/common :: layout(~{::title}, ~{::main})}">
+<head><title>Orders - OnlineShop</title></head>
+<body>
+<main>
+    <h1 class="h3 mb-4">My Orders</h1>
+    <div class="alert alert-info" th:if="${orders.isEmpty()}">You have no orders yet.</div>
+    <div class="list-group" th:unless="${orders.isEmpty()}">
+        <a class="list-group-item list-group-item-action" th:each="order : ${orders}" th:href="@{/orders/{id}(id=${order.id})}">
+            <div class="d-flex justify-content-between">
+                <strong th:text="|Order #${order.id}|">Order #1</strong>
+                <span class="badge text-bg-success" th:text="${order.status}">PLACED</span>
+            </div>
+            <div class="small text-muted" th:text="${order.createdAt}">2026-01-01</div>
+            <div class="mt-1" th:text="|Total: ${order.totalAmount}|">Total: 0.00</div>
+        </a>
+    </div>
+</main>
+</body>
+</html>
